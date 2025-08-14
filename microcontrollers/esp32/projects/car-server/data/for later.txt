@@ -1,0 +1,11 @@
+A variety of other lightweight styling libraries are excellent options for your ESP32 project. When choosing one, focus on minimal file size and pure CSS implementations to avoid large JavaScript bundles.
+
+Lightweight CSS Frameworks
+Pico.css: This is a very popular and robust option. It's only about 10 KB minified and provides a clean, modern, and responsive design out of the box. It offers excellent typography, forms, and grid layouts without needing any JavaScript. It's a great choice for a simple dashboard.
+
+
+Bulma: While slightly larger than Pico.css, Bulma is still considered lightweight at around 20 KB minified. It's a modern CSS framework based on Flexbox and provides a wide range of components like buttons, notifications, and cards. It's a good step up if you need a more feature-rich library without the bloat.
+
+Pure.css: From Yahoo, Pure.css is a highly modular and tiny CSS framework. It's under 4 KB minified and offers a solid foundation of responsive grids, forms, and buttons. You can cherry-pick the modules you need, keeping your final file size extremely small.
+
+Skeleton: This library is known for its simplicity and minimal footprint. It’s an easy-to-use boilerplate for responsive development. It's just a single CSS file and provides the essentials for a simple website.

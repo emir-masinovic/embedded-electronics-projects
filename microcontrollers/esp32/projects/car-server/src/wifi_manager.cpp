@@ -3,7 +3,7 @@
 const char* sta_ssid = "";
 const char* sta_password = "";
 const char* ap_ssid = "VanServer";
-const char* ap_password = "VanServer123";
+const char* ap_password = "123";
 
 WiFiMode wifi_state = AP_MODE;
 

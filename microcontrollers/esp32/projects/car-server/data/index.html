@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>ESP32 Dashboard</title>
+		<link rel="stylesheet" href="milligram.min.css" />
+		<style>
+			body {
+				padding: 20px;
+        background: steelblue;
+			}
+			.card {
+				background: #f4f5f6;
+				border: 1px solid #d1d1d1;
+				border-radius: 4px;
+				padding: 15px;
+				margin-bottom: 20px;
+			}
+			.flex-container {
+				display: flex;
+				justify-content: space-between;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+      <div class="row" style="display: flex; align-content: center; justify-content: center;  color: rgb(156, 199, 235)">
+        <h1>Car Server Dashboard</h1>
+      </div>
+		
+
+			<div class="row">
+				<div class="column column-50">
+					<div class="card">
+						<h4>Connection Status</h4>
+						<p>IP Address: <span id="ip-address">Loading...</span></p>
+						<p>Mode: <span id="wifi-mode">Loading...</span></p>
+					</div>
+				</div>
+
+				<div class="column column-50">
+					<div class="card">
+						<h4>Joystick Data</h4>
+						<div class="flex-container">
+							<p>X: <span id="joy-x">0</span></p>
+							<p>Y: <span id="joy-y">0</span></p>
+							<p>Switch: <span id="joy-sw">OFF</span></p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			setInterval(() => {
+				fetch('/joystick')
+					.then((response) => response.json())
+					.then((data) => {
+						document.getElementById('joy-x').textContent = data.x;
+						document.getElementById('joy-y').textContent = data.y;
+						document.getElementById('joy-sw').textContent = data.sw;
+					});
+			}, 250);
+		</script>
+	</body>
+</html>
