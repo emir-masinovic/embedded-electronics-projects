@@ -1,19 +1,32 @@
 #include "wifi_manager.h"
 
+#include <WiFi.h>
+
 const char* sta_ssid = "";
 const char* sta_password = "";
 const char* ap_ssid = "VanServer";
-const char* ap_password = "123";
+const char* ap_password = "123456789";
 
 WiFiMode wifi_state = AP_MODE;
 
-void initWiFi() { startAPMode(); }
+void setupWiFi() {
+  Serial.println("Setting up the WiFi Manager");
+  startAPMode();
+}
+
+void changeWiFiMode() {
+  if (wifi_state == AP_MODE) {
+    startSTAMode();
+  } else {
+    startAPMode();
+  }
+}
 
 void startAPMode() {
   WiFi.mode(WIFI_AP);
   WiFi.softAP(ap_ssid, ap_password);
   wifi_state = AP_MODE;
-  Serial.println("Switched to AP Mode!");
+  Serial.println("Starting AP Mode");
   Serial.print("IP Address: ");
   Serial.println(WiFi.softAPIP());
 }
@@ -22,20 +35,20 @@ void startSTAMode() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(sta_ssid, sta_password);
   wifi_state = STA_MODE;
+  Serial.println("Starting STA Mode");
   Serial.println("Connecting to WiFi...");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP().toString());
+}
 
-  unsigned long connection_start_time = millis();
-  while (WiFi.status() != WL_CONNECTED &&
-         millis() - connection_start_time < 20000) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.print("IP Address: ");
-    Serial.println(WiFi.localIP());
+WiFiState getWiFiState() {
+  WiFiState state;
+  if (wifi_state == AP_MODE) {
+    state.ip = WiFi.softAPIP().toString();
+    state.mode = "AP";
   } else {
-    Serial.println("\nFailed to connect to WiFi. Switching back to AP Mode.");
-    startAPMode();
+    state.ip = WiFi.localIP().toString();
+    state.mode = "STA";
   }
+  return state;
 }

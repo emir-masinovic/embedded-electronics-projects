@@ -8,7 +8,8 @@ const int OLED_RESET = -1;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-void initOLED() {
+void setupOLED() {
+  Serial.println("Setting up OLED screen");
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println(F("SSD1306 allocation failed"));
     for (;;);
@@ -17,12 +18,12 @@ void initOLED() {
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0, 0);
-  display.println("Starting Server...");
+  display.println("OLED Setup");
   display.display();
 }
 
-void updateOLED(const String& ip, const String& mode, int joyX, int joyY,
-                bool joySW) {
+void loopOLED(const String& ip, const String& mode, int joyX, int joyY,
+              bool joySW) {
   display.clearDisplay();
   display.setCursor(0, 0);
   display.println(mode + " Mode Active");

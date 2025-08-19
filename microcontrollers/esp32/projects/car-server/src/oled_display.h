@@ -3,11 +3,12 @@
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Arduino.h>
 
 extern Adafruit_SSD1306 display;
 
-void initOLED();
-void updateOLED(const String& ip, const String& mode, int joyX, int joyY,
-                bool joySW);
+void setupOLED();
+void loopOLED(const String& ip, const String& mode, int joyX, int joyY,
+              bool joySW);
 
 #endif
