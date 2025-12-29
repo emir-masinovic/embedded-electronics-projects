@@ -16,6 +16,5 @@ const char keys[ROWS][COLS] = {
 const byte rowPins[ROWS] = {D0, D5, D6, D7}; 
 const byte colPins[COLS] = {3, 1, D3, D4}; 
 
-static Keypad keypad = Keypad(makeKeymap(keys), (byte*)rowPins, (byte*)colPins, ROWS, COLS);
-
+extern Keypad keypad;
 #endif
