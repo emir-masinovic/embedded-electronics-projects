@@ -5,11 +5,14 @@
 
 namespace MenuManager
 {
-    extern char globalSsid[33];
-    extern char globalPass[65];
-
     void init();
     void run();
+
+    const char *getSSID();
+    const char *getWifiPass();
+
+    void setSSID(const char *s);
+    void setWifiPass(const char *s);
 }
 
 #endif

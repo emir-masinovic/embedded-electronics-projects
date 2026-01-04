@@ -6,6 +6,7 @@
 #include "WeatherApp.h"
 #include "SettingsWifi.h"
 #include "utils.h"
+#include "DinoApp.h"
 
 namespace MenuManager
 {
@@ -20,50 +21,70 @@ namespace MenuManager
         SETTINGS_WIFI
     };
 
-    struct MenuModel
+    struct AppRecord
     {
-        int currentIndex = 0;
-        const int totalApps = 4;
-        const char *appNames[4] = {"WEATHER", "DINO", "CONSOLE", "WIFI"};
+        SystemState state;
+        const char *name;
+        const uint8_t *iconData;
     };
 
-    static MenuModel model;
-    static SystemState currentSystemState = STATE_MENU;
-    LiquidCrystal_I2C lcd(0x27, 16, 2);
+    static const AppRecord APPS[] = {
+        {APP_WEATHER, "WEATHER", icon_weather},
+        {APP_DINO, "DINO", icon_dino},
+        {APP_CONSOLE, "CONSOLE", icon_console},
+        {SETTINGS_WIFI, "WIFI", icon_wifi},
+    };
+    const int TOTAL_APPS = sizeof(APPS) / sizeof(APPS[0]);
 
-    char globalSsid[33] = "";
-    char globalPass[65] = "";
-
-    void handleMenuNavigation(InputAction action);
-    void processEvents(char key);
-
-    void init()
+    struct ModelMenu
     {
-        lcd.init();
-        lcd.backlight();
-        lcd.createChar(0, (uint8_t *)icon_weather);
-        lcd.createChar(1, (uint8_t *)icon_dragon);
-        lcd.createChar(2, (uint8_t *)icon_console);
-        MenuView::draw(lcd, model.currentIndex, model.totalApps, model.appNames);
+        int index = 0;
+        SystemState state = STATE_MENU;
+        char ssid[33] = "";
+        char pass[65] = "";
+    };
+    static ModelMenu modelMenu;
+
+    const char *getSSID() { return modelMenu.ssid; }
+    void setSSID(const char *s)
+    {
+        strncpy(modelMenu.ssid, s, 32);
+        modelMenu.ssid[32] = '\0';
     }
 
-    void run() { processEvents(keypad.getKey()); }
+    const char *getWifiPass() { return modelMenu.pass; }
+    void setWifiPass(const char *s)
+    {
+        strncpy(modelMenu.pass, s, 64);
+        modelMenu.pass[64] = '\0';
+    }
+
+    LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+    void handleMenuNavigation(InputAction action);
+
+    void loadMenuIcons()
+    {
+        for (int i = 0; i < TOTAL_APPS; i++)
+        {
+            lcd.createChar(i, (uint8_t *)APPS[i].iconData);
+        }
+    }
 
     void processEvents(char key)
     {
         InputAction action = getAction(key);
 
         // Global Action: Exit always takes priority
-        if (action == ACT_BACK && currentSystemState != STATE_MENU)
+        if (action == ACT_BACK && modelMenu.state != STATE_MENU)
         {
-            currentSystemState = STATE_MENU;
-            lcd.clear();
-            MenuView::draw(lcd, model.currentIndex, model.totalApps, model.appNames);
+            modelMenu.state = STATE_MENU;
+            MenuView::draw(lcd, modelMenu.index, TOTAL_APPS, APPS[modelMenu.index].name);
             return;
         }
 
         // clang-format off
-        switch (currentSystemState) {
+        switch (modelMenu.state) {
             case STATE_MENU:     handleMenuNavigation(action); break;
             case APP_WEATHER:    WeatherApp::run(key, lcd);    break;
             case SETTINGS_WIFI:  SettingsWifi::run(key, lcd);  break;
@@ -72,33 +93,37 @@ namespace MenuManager
         // clang-format on
     }
 
-    void handleMenuNavigation(InputAction action)
-    {
-        // clang-format off
+    // clang-format off
+   void handleMenuNavigation(InputAction action) {
         if (action == ACT_NONE) return;
 
-        switch (action)
-        {
-        case ACT_LEFT:
-            model.currentIndex = (model.currentIndex - 1 + model.totalApps) % model.totalApps;
-            MenuView::draw(lcd, model.currentIndex, model.totalApps, model.appNames);
-            break;
+        if (action == ACT_LEFT)  modelMenu.index = (modelMenu.index - 1 + TOTAL_APPS) % TOTAL_APPS;
+        if (action == ACT_RIGHT) modelMenu.index = (modelMenu.index + 1) % TOTAL_APPS;
 
-        case ACT_RIGHT:
-            model.currentIndex = (model.currentIndex + 1) % model.totalApps;
-            MenuView::draw(lcd, model.currentIndex, model.totalApps, model.appNames);
-            break;
-
-        case ACT_CONFIRM:
-        case ACT_SELECT:
-            currentSystemState = (SystemState)(model.currentIndex + 1);
-            lcd.clear();
-            if (currentSystemState == APP_WEATHER) WeatherApp::init(lcd);
-            if (currentSystemState == SETTINGS_WIFI) SettingsWifi::init(lcd);
-            break;
-
-        default: break;
+        if (action == ACT_LEFT || action == ACT_RIGHT) {
+            MenuView::draw(lcd, modelMenu.index, TOTAL_APPS, APPS[modelMenu.index].name);
         }
-        // clang-format on
+
+        if (action == ACT_SELECT || action == ACT_CONFIRM) {
+            modelMenu.state = APPS[modelMenu.index].state;
+            
+            switch (modelMenu.state) {
+                case APP_WEATHER:   WeatherApp::init(lcd); break;
+                case APP_DINO:      DinoApp::init(lcd);    break;
+                case SETTINGS_WIFI: SettingsWifi::init(lcd); break;
+                default: break;
+            }
+        }
     }
+    // clang-format on
+
+    void init()
+    {
+        lcd.init();
+        lcd.backlight();
+        loadMenuIcons();
+        MenuView::draw(lcd, modelMenu.index, TOTAL_APPS, APPS[modelMenu.index].name);
+    }
+
+    void run() { processEvents(keypad.getKey()); }
 }

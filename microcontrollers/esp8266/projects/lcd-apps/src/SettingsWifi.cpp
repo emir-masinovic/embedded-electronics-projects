@@ -57,8 +57,6 @@ namespace SettingsWifi
     void init(LiquidCrystal_I2C &lcd)
     {
         loadAllFromEEPROM();
-        strncpy(model.tempSsid, MenuManager::globalSsid, 32);
-        strncpy(model.tempPass, MenuManager::globalPass, 64);
         lcd.clear();
     }
 
@@ -173,8 +171,8 @@ namespace SettingsWifi
         {
             SettingsWifiView::drawMessage(lcd, "CONNECTED!", model.tempSsid);
             saveCurrentToSlot();
-            strncpy(MenuManager::globalSsid, model.tempSsid, 32);
-            strncpy(MenuManager::globalPass, model.tempPass, 64);
+            MenuManager::setSSID(model.tempSsid);
+            MenuManager::setWifiPass(model.tempPass);
         }
         else
         {
