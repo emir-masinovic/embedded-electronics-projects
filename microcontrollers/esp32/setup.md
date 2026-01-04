@@ -4,6 +4,7 @@
 
 - **Install the USB Driver**: Download and install the **CH340 driver** to ensure your computer can communicate with the ESP32 board.
 - **Install the Arduino IDE**: Download and install the latest version of the **Arduino IDE**.
+Note: https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers?tab=downloads
 
 #### **2. Board Setup in the Arduino IDE**
 
