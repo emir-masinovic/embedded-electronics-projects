@@ -26,15 +26,18 @@ namespace MenuManager
         SystemState state;
         const char *name;
         const uint8_t *iconData;
+        AppInitFn initFn;
+        AppRunFn runFn;
     };
 
+    // clang-format off
     static const AppRecord APPS[] = {
-        {APP_WEATHER, "WEATHER", icon_weather},
-        {APP_DINO, "DINO", icon_dino},
-        {APP_CONSOLE, "CONSOLE", icon_console},
-        {SETTINGS_WIFI, "WIFI", icon_wifi},
+        {APP_WEATHER,   "WEATHER", icon_weather, WeatherApp::init,   WeatherApp::run},
+        {APP_DINO,      "DINO",    icon_dino,    DinoApp::init,      DinoApp::run},
+        {SETTINGS_WIFI, "WIFI",    icon_wifi,    SettingsWifi::init, SettingsWifi::run},
     };
     const int TOTAL_APPS = sizeof(APPS) / sizeof(APPS[0]);
+    // clang-format on
 
     struct ModelMenu
     {
@@ -46,16 +49,17 @@ namespace MenuManager
     static ModelMenu modelMenu;
 
     const char *getSSID() { return modelMenu.ssid; }
-    void setSSID(const char *s)
+    const char *getWifiPass() { return modelMenu.pass; }
+
+    void setSSID(const char *newSsid)
     {
-        strncpy(modelMenu.ssid, s, 32);
+        strncpy(modelMenu.ssid, newSsid, 32);
         modelMenu.ssid[32] = '\0';
     }
 
-    const char *getWifiPass() { return modelMenu.pass; }
-    void setWifiPass(const char *s)
+    void setWifiPass(const char *newPass)
     {
-        strncpy(modelMenu.pass, s, 64);
+        strncpy(modelMenu.pass, newPass, 64);
         modelMenu.pass[64] = '\0';
     }
 
@@ -66,13 +70,12 @@ namespace MenuManager
     void loadMenuIcons()
     {
         for (int i = 0; i < TOTAL_APPS; i++)
-        {
             lcd.createChar(i, (uint8_t *)APPS[i].iconData);
-        }
     }
 
     void processEvents(char key)
     {
+
         InputAction action = getAction(key);
 
         // Global Action: Exit always takes priority
@@ -84,17 +87,16 @@ namespace MenuManager
         }
 
         // clang-format off
-        switch (modelMenu.state) {
-            case STATE_MENU:     handleMenuNavigation(action); break;
-            case APP_WEATHER:    WeatherApp::run(key, lcd);    break;
-            case SETTINGS_WIFI:  SettingsWifi::run(key, lcd);  break;
-            default: break;
+        if (modelMenu.state == STATE_MENU) { handleMenuNavigation(action);} 
+        else {
+            if (APPS[modelMenu.index].runFn) 
+                APPS[modelMenu.index].runFn(key, lcd);
         }
         // clang-format on
     }
 
     // clang-format off
-   void handleMenuNavigation(InputAction action) {
+    void handleMenuNavigation(InputAction action) {
         if (action == ACT_NONE) return;
 
         if (action == ACT_LEFT)  modelMenu.index = (modelMenu.index - 1 + TOTAL_APPS) % TOTAL_APPS;
@@ -106,12 +108,8 @@ namespace MenuManager
 
         if (action == ACT_SELECT || action == ACT_CONFIRM) {
             modelMenu.state = APPS[modelMenu.index].state;
-            
-            switch (modelMenu.state) {
-                case APP_WEATHER:   WeatherApp::init(lcd); break;
-                case APP_DINO:      DinoApp::init(lcd);    break;
-                case SETTINGS_WIFI: SettingsWifi::init(lcd); break;
-                default: break;
+            if (APPS[modelMenu.index].initFn) {
+                APPS[modelMenu.index].initFn(lcd);
             }
         }
     }
