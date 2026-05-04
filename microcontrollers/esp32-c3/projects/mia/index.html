@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mia Script Injector</title>
+    <style>
+        body { background: #121212; color: #00ff00; font-family: 'Courier New', monospace; padding: 20px; }
+        textarea { width: 100%; height: 200px; background: #000; color: #00ff00; border: 1px solid #00ff00; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #222; color: #0f0; border: 1px solid #0f0; }
+    </style>
+</head>
+<body>
+    <h2>Mia OS - Script Injector</h2>
+    <button onclick="connect()">Connect Serial</button>
+    <span id="st">Disconnected</span>
+    <hr>
+    <textarea id="scriptBox">
+t:0,20,Test1
+t:0,40,Test 2
+t:100,40,Tst 3
+show</textarea>
+    <br>
+    <button onclick="runScript()">Run Script</button>
+    <button onclick="writeRaw('clear')">Clear Screen</button>
+
+    <script>
+        let port;
+        async function connect() {
+            port = await navigator.serial.requestPort();
+            await port.open({ baudRate: 115200 });
+            document.getElementById('st').innerText = "Connected";
+        }
+
+        async function writeRaw(txt) {
+            const writer = port.writable.getWriter();
+            await writer.write(new TextEncoder().encode(txt + "\n"));
+            writer.releaseLock();
+        }
+
+        async function runScript() {
+            const lines = document.getElementById('scriptBox').value.split('\n');
+            for (let line of lines) {
+                if (line.trim()) {
+                    await writeRaw(line.trim());
+                    await new Promise(r => setTimeout(r, 100)); 
+                }
+            }
+        }
+    </script>
+</body>
+</html>
